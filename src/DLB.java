@@ -86,21 +86,22 @@ public class DLB {
 	static int sizeSlideWindow= 10;		//Sliding window
 	static int chromosomes[][][]= new int[1000][5][10]; 		//Solution set (Population of 1000) 
 	static int minScheduleList[][]= new int[5][10];		//Processor - Task list of Min Schedule
-	//static int procAvT[];				//Processor available time
+	static int procAvT[] = new int[10];				//Processor available time
 	static scheduleTask schedule[] = new scheduleTask[10];		//Store schedule task data 
 //	static int taskAtProc[][] = new int[1001][20];	//store which task schedule at which processor
 	static inputData input= new inputData();//store input  
 	int slideWindow[] = new int[sizeSlideWindow];					//store current task no in Sliding window
-	
-	
+	static int counter[][] = new int[1000][5];
+	static float fitNess[] = new float[1000];
+	static float roulette[] = new float[1000];
+ 	
 	
 	
 	//Create Population of 1000 Chromosomes and store it in chromosomes[][][]
 	static void createPopulation()
 	{	
 		Random rand = new Random();
-		int k,tmp,l,z,j,i;
-		int counter[][] = new int[1000][5];
+		int k,tmp,l,z,j,i;		
 		input.takeinput();
 		for(l=0;l<1000;l++) // Populatio 1000
 		{
@@ -123,16 +124,122 @@ public class DLB {
 				System.out.print(" ");
 			}
 		*/
+		}			
+	}
+	
+	//Calculate max of two integers
+	static int maX(int x,int y)
+	{
+		return x>y?x:y;
+	}
+	
+	//Calculate max of two floats
+	static float maXF(float x,float y)
+	{
+		return x>y?x:y;
+	}
+		
+	//Calculate Fitness of a given chromosome (include the average utilization of Processors)	
+	static float fitNessCal(int id)
+	{
+		int i=0,j,z,scheduleTime=0;
+		float avgUtilization =0 ,sum =0,fitness=0;
+		
+			
+		for(z=0;z<input.no_Of_Proc;z++)
+		{
+			procAvT[z]=0;
 		}
 		
-		
-	
+		for(i=0;i<input.no_Of_Proc;i++)
+		{
+			int maxDAT=0;
+			for(j=0;j<counter[id][i];j++)
+			{				
+					maxDAT+= input.inputTask.exe_time[(chromosomes[id][i][j])];
+			}
+			scheduleTime = maX(scheduleTime,maxDAT);
+			procAvT[i] = maxDAT ;
+			sum+=maxDAT;
+			//System.out.print(maxDAT+" ");
+		}
+		avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; 
+		/*System.out.print(":");
+		scheduleTime=0;
+		for(i=0;i<5;i++)
+		{
+			if(scheduleTime<procAvT[i])
+				scheduleTime=procAvT[i];
+		}
+		//for(i=0;i<5;i++)
+		//{
+		//	System.out.print(procAvT[i]+" ");
+		//}
+		*/
+		fitness = avgUtilization/scheduleTime;				
+		return fitness*1000;
 	}
+	
+	//Roullete wheel Selection
+	static int roulette_Selection()
+	{
+		Random rand = new Random();
+		int s_id=0,i=0;
+		float sum_fitNess=0,tmp;	
+		
+		for(i=0;i<1000;i++)
+		{
+			sum_fitNess +=fitNess[i] ;
+			
+		}
+		
+		roulette[0] =fitNess[0]/sum_fitNess;
+		for(i=1;i<1000;i++)
+		{
+			roulette[i] =roulette[i-1]+(fitNess[i]/sum_fitNess);			
+		}
+		tmp = (rand.nextInt((int)sum_fitNess))/sum_fitNess;
+		for(i=1;i<1000;i++)
+		{
+			//System.out.println(tmp);
+			if((tmp>roulette[i-1]) && (tmp<roulette[i]))
+			{
+				s_id =i; 
+				break;
+			}
+		}
+		return s_id;
+	}
+	
+	//Cycle Crossover
 	
 	
 	//Main method
 	public static void main(String [] args){
 
+		int i=0,maxFitId=0,j=0;
+		float maxFit=0;
 		createPopulation();
+		for(i=0;i<1000;i++)
+		{
+			//System.out.print(fitNessCal(i)+" ");
+			fitNess[i] = fitNessCal(i);
+			if(maxFit<fitNess[i])
+			{
+				maxFit = fitNess[i];
+				maxFitId = i;
+			}
+		}
+		/*
+		System.out.println(maxFit+" "+maxFitId);
+		System.out.print("\n");
+		for(i=0;i<input.no_Of_Proc;i++)
+		{
+			for(j=0;j<counter[maxFitId][i];j++)
+				System.out.print(chromosomes[maxFitId][i][j]+" ");
+			System.out.print(" ");
+		}
+		*/
+		System.out.println(roulette_Selection());
 	}
 }
