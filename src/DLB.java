@@ -84,15 +84,15 @@ public class DLB {
 	
 	static int minScheduleTime=1000;    //intial schedule
 	static int sizeSlideWindow= 10;		//Sliding window
-	static int chromosomes[][][]= new int[2000][5][10]; 		//Solution set (Population of 1000) 
+	static int chromosomes[][][]= new int[2001][5][10]; 		//Solution set (Population of 1000) 
 	static int minScheduleList[][]= new int[5][10];		//Processor - Task list of Min Schedule
 	static int procAvT[] = new int[10];				//Processor available time
 	static scheduleTask schedule[] = new scheduleTask[10];		//Store schedule task data 
 //	static int taskAtProc[][] = new int[1001][20];	//store which task schedule at which processor
 	static inputData input= new inputData();//store input  
 	int slideWindow[] = new int[sizeSlideWindow];					//store current task no in Sliding window
-	static int counter[][] = new int[1000][5];
-	static float fitNess[] = new float[1000];
+	static int counter[][] = new int[2001][5];
+	static float fitNess[] = new float[2001];
 	static float roulette[] = new float[1000];
 	
  	
@@ -230,6 +230,7 @@ public class DLB {
 				for(j=0;j<counter[P1][k];j++)
 				{				
 					tmp[i][x] = chromosomes[P1][k][j];
+
 					x++;
 				}
 			}
@@ -273,6 +274,7 @@ public class DLB {
 					tmp[1001+i][l] = tmp[i][l];
 				}
 			}
+			
 			/*
 			for(l=0;l<10;l++)
 			{
@@ -294,15 +296,18 @@ public class DLB {
 			x=0;
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
+				counter[1000+i][k] = counter[P1][k];
 				for(j=0;j<counter[P1][k];j++)
 				{				
 					chromosomes[1000+i][k][j]= tmp[1000+i][x];
+
 					x++;
 				}
 			}
 			x=0;
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
+				counter[1001+i][k] = counter[P2][k];
 				for(j=0;j<counter[P2][k];j++)
 				{				
 					chromosomes[1001+i][k][j] = tmp[1001+i][x];
@@ -325,6 +330,56 @@ public class DLB {
 			}
 			*/
 		}		
+	}
+	
+	
+	//Mutation
+	static void Mutation()
+	{
+		int i,j,k,randSol,randT1,randT2;
+		Random rand = new Random();
+		float fitPar,fitMut;
+		for(i=0;i<1;i++)
+		{
+			randSol = rand.nextInt(1000);
+			randT1 = rand.nextInt(10);
+			randT2 = rand.nextInt(10);
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				counter[2000][k] =counter[randSol][k];
+				for(j=0;j<counter[randSol][k];j++)
+				{				
+					if(chromosomes[1000+randSol][k][j] == randT1)
+						chromosomes[2000][k][j] = randT2;
+					else
+					{
+						if(chromosomes[1000+randSol][k][j] == randT2)
+							chromosomes[2000][k][j] = randT1;
+						else
+							chromosomes[2000][k][j] = chromosomes[1000+randSol][k][j];
+					}
+				}
+			}
+			fitPar = fitNessCal(1000+randSol);
+			fitMut = fitNessCal(2000);
+			//System.out.println(fitPar+" "+fitMut+" "+randSol);
+			if(fitPar<fitMut)
+			{
+				for(k=0;k<input.no_Of_Proc;k++)
+				{
+					counter[2000][k] =0;
+					for(j=0;j<counter[randSol][k];j++)
+					{				
+						if(chromosomes[1000+randSol][k][j] == randT1)
+							chromosomes[1000+randSol][k][j] = randT2;
+						if(chromosomes[1000+randSol][k][j] == randT2)
+							chromosomes[1000+randSol][k][j] = randT1;
+						
+						chromosomes[2000][k][j] = 0;
+					}
+				}
+			}
+		}
 	}
 	
 	//Main method
@@ -356,5 +411,6 @@ public class DLB {
 	//	System.out.println(roulette_Selection());
 	//	System.out.println(roulette_Selection());
 		cycleCrosssover();
+		Mutation();
 	}
 }
