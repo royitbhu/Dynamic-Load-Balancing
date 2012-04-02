@@ -84,7 +84,7 @@ public class DLB {
 	
 	static int minScheduleTime=1000;    //intial schedule
 	static int sizeSlideWindow= 10;		//Sliding window
-	static int chromosomes[][][]= new int[1000][5][10]; 		//Solution set (Population of 1000) 
+	static int chromosomes[][][]= new int[2000][5][10]; 		//Solution set (Population of 1000) 
 	static int minScheduleList[][]= new int[5][10];		//Processor - Task list of Min Schedule
 	static int procAvT[] = new int[10];				//Processor available time
 	static scheduleTask schedule[] = new scheduleTask[10];		//Store schedule task data 
@@ -94,6 +94,7 @@ public class DLB {
 	static int counter[][] = new int[1000][5];
 	static float fitNess[] = new float[1000];
 	static float roulette[] = new float[1000];
+	
  	
 	
 	
@@ -212,7 +213,119 @@ public class DLB {
 	}
 	
 	//Cycle Crossover
-	
+	static void cycleCrosssover()
+	{
+		int i=0,P1,P2,k,j,x=0,randVar,l;
+		int tmp[][] = new int[2000][10];
+		int switchNum[] = new int[10];
+		Random rand = new Random();
+		for(i=0;i<1000;i+=2)
+		{
+			P1 = roulette_Selection();
+			P2 = roulette_Selection();
+			//System.out.println(P1+"  "+P2);
+			x=0;
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[P1][k];j++)
+				{				
+					tmp[i][x] = chromosomes[P1][k][j];
+					x++;
+				}
+			}
+			x=0;
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[P2][k];j++)
+				{				
+					tmp[i+1][x] = chromosomes[P2][k][j];
+					x++;
+				}
+			}
+			for(l=0;l<10;l++)
+			{
+				switchNum[l] = 0;
+			}
+			randVar = rand.nextInt(10);
+			int temp = tmp[i][randVar];
+			//System.out.println(randVar);
+			tmp[1000+i][randVar] = tmp[i][randVar];
+			tmp[1001+i][randVar] = tmp[i+1][randVar];
+			switchNum[randVar]= 1;
+			while(tmp[i+1][randVar]!=temp)
+			{
+				l=0;
+				while(tmp[i][l]!=tmp[i+1][randVar])
+				{
+					l++;
+				}
+				randVar = l;
+				tmp[1000+i][randVar] = tmp[i][randVar];
+				tmp[1001+i][randVar] = tmp[i+1][randVar];
+				switchNum[randVar]= 1;				
+			}
+			
+			for(l=0;l<10;l++)
+			{
+				if(switchNum[l]==0)
+				{
+					tmp[1000+i][l] = tmp[i+1][l];
+					tmp[1001+i][l] = tmp[i][l];
+				}
+			}
+			/*
+			for(l=0;l<10;l++)
+			{
+				System.out.print(tmp[i][l]+" ");
+			}System.out.println();
+			for(l=0;l<10;l++)
+			{
+				System.out.print(tmp[i+1][l]+" ");
+			}System.out.println();
+			for(l=0;l<10;l++)
+			{
+				System.out.print(tmp[1000+i][l]+" ");
+			}System.out.println();
+			for(l=0;l<10;l++)
+			{
+				System.out.print(tmp[1001+i][l]+" ");
+			}System.out.println();
+			*/
+			x=0;
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[P1][k];j++)
+				{				
+					chromosomes[1000+i][k][j]= tmp[1000+i][x];
+					x++;
+				}
+			}
+			x=0;
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[P2][k];j++)
+				{				
+					chromosomes[1001+i][k][j] = tmp[1001+i][x];
+					x++;
+				}
+			}
+			/*
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[P1][k];j++)
+					System.out.print(chromosomes[1000+i][k][j]+" ");
+				System.out.print(" ");
+			}
+			System.out.println();
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[P2][k];j++)
+					System.out.print(chromosomes[1001+i][k][j]+" ");
+				System.out.print(" ");
+			}
+			*/
+		}		
+	}
 	
 	//Main method
 	public static void main(String [] args){
@@ -240,6 +353,8 @@ public class DLB {
 			System.out.print(" ");
 		}
 		*/
-		System.out.println(roulette_Selection());
+	//	System.out.println(roulette_Selection());
+	//	System.out.println(roulette_Selection());
+		cycleCrosssover();
 	}
 }
