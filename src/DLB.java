@@ -40,21 +40,21 @@ class inputData {
      	    	//Input no. of Tasks and Processors
      	    	no_Of_Proc = Integer.parseInt(line);
  
-     	    	System.out.println("No. of Processor = "+ no_Of_Proc+"\n");
+     	    	//System.out.println("No. of Processor = "+ no_Of_Proc+"\n");
      	    	
      	    	line = scanner.nextLine(); 
      	    	line = scanner.nextLine(); 
      	    	//Input Execution time of each Task     	    	
-     	    	System.out.print("Task No\t Execution time");
-     	    	System.out.print("\n");
+     	    //	System.out.print("Task No\t Execution time");
+     	    //	System.out.print("\n");
      	    	
      	    	st=new StringTokenizer(line," ");
      	    	for(i=0;st.hasMoreTokens();i++)
      	    	{
-     	    			System.out.print("(");
+     	    	//		System.out.print("(");
      	    			inputTask.exe_time[i] = Integer.parseInt(st.nextToken());
-     	    			System.out.print("  "+i+"\t\t"+inputTask.exe_time[i]);
-	        	    	System.out.print(" )\n");	        	    	
+     	    	//		System.out.print("  "+i+"\t\t"+inputTask.exe_time[i]);
+	        	//   	System.out.print(" )\n");	        	    	
      	    	}
      	    	System.out.println();
      
@@ -94,7 +94,7 @@ public class DLB {
 	static int counter[][] = new int[2001][5];
 	static float fitNess[] = new float[2001];
 	static float roulette[] = new float[1000];
-	
+	static int finalSchedule[][] = new int [5][10];
  	
 	
 	
@@ -339,7 +339,7 @@ public class DLB {
 		int i,j,k,randSol,randT1,randT2;
 		Random rand = new Random();
 		float fitPar,fitMut;
-		for(i=0;i<1;i++)
+		for(i=0;i<1000;i++)
 		{
 			randSol = rand.nextInt(1000);
 			randT1 = rand.nextInt(10);
@@ -385,7 +385,7 @@ public class DLB {
 	//Main method
 	public static void main(String [] args){
 
-		int i=0,maxFitId=0,j=0;
+		int i=0,maxFitId=0,j=0,k,key=0;
 		float maxFit=0;
 		createPopulation();
 		for(i=0;i<1000;i++)
@@ -411,6 +411,56 @@ public class DLB {
 	//	System.out.println(roulette_Selection());
 	//	System.out.println(roulette_Selection());
 		cycleCrosssover();
+		for(i=1000;i<2000;i++)
+		{
+			//System.out.print(fitNessCal(i)+" ");
+			fitNess[i] = fitNessCal(i);
+			if(maxFit<fitNess[i])
+			{
+				maxFit = fitNess[i];
+				maxFitId = i;
+			}
+		}
+		for(k=0;k<input.no_Of_Proc;k++)
+		{
+			for(j=0;j<counter[maxFitId][k];j++)
+			{				
+				finalSchedule[k][j] =chromosomes[maxFitId][k][j];
+			}
+		}
+		System.out.println(maxFit);
+		
 		Mutation();
+		
+		for(i=1000;i<2000;i++)
+		{
+			//System.out.print(fitNessCal(i)+" ");
+			fitNess[i] = fitNessCal(i);
+			if(maxFit<fitNess[i])
+			{
+				maxFit = fitNess[i];
+				maxFitId = i;
+				key=1;
+			}
+		}
+		if(key==1)
+		{
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<10;j++)
+				{				
+					finalSchedule[k][j] = 0;
+				}
+			}			
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[maxFitId][k];j++)
+				{				
+					finalSchedule[k][j] = chromosomes[maxFitId][k][j];
+				}
+			}
+		}
+	System.out.println(maxFit);
+	
 	}
 }
