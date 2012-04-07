@@ -15,6 +15,7 @@ class tasks{
 //Take input through File
 class inputData {
 	int no_Of_Proc;
+	int no_Of_Task;
 	tasks inputTask;
 	
 	inputData()	{
@@ -56,6 +57,7 @@ class inputData {
      	    	//		System.out.print("  "+i+"\t\t"+inputTask.exe_time[i]);
 	        	//   	System.out.print(" )\n");	        	    	
      	    	}
+     	    	no_Of_Task = i;
      	    	System.out.println();
      
      	}
@@ -147,11 +149,6 @@ public class DLB {
 		float avgUtilization =0 ,sum =0,fitness=0;
 		
 			
-		for(z=0;z<input.no_Of_Proc;z++)
-		{
-			procAvT[z]=0;
-		}
-		
 		for(i=0;i<input.no_Of_Proc;i++)
 		{
 			int maxDAT=0;
@@ -160,7 +157,7 @@ public class DLB {
 					maxDAT+= input.inputTask.exe_time[(chromosomes[id][i][j])];
 			}
 			scheduleTime = maX(scheduleTime,maxDAT);
-			procAvT[i] = maxDAT ;
+			//procAvT[i] = maxDAT ;
 			sum+=maxDAT;
 			//System.out.print(maxDAT+" ");
 		}
@@ -346,8 +343,8 @@ public class DLB {
 			randT2 = rand.nextInt(10);
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
-				counter[2000][k] =counter[randSol][k];
-				for(j=0;j<counter[randSol][k];j++)
+				counter[2000][k] =counter[1000+randSol][k];
+				for(j=0;j<counter[2000][k];j++)
 				{				
 					if(chromosomes[1000+randSol][k][j] == randT1)
 						chromosomes[2000][k][j] = randT2;
@@ -360,6 +357,7 @@ public class DLB {
 					}
 				}
 			}
+	
 			fitPar = fitNessCal(1000+randSol);
 			fitMut = fitNessCal(2000);
 			//System.out.println(fitPar+" "+fitMut+" "+randSol);
@@ -368,12 +366,13 @@ public class DLB {
 				for(k=0;k<input.no_Of_Proc;k++)
 				{
 					counter[2000][k] =0;
-					for(j=0;j<counter[randSol][k];j++)
+					for(j=0;j<counter[1000+randSol][k];j++)
 					{				
 						if(chromosomes[1000+randSol][k][j] == randT1)
 							chromosomes[1000+randSol][k][j] = randT2;
-						if(chromosomes[1000+randSol][k][j] == randT2)
-							chromosomes[1000+randSol][k][j] = randT1;
+						else
+							if(chromosomes[1000+randSol][k][j] == randT2)
+								chromosomes[1000+randSol][k][j] = randT1;
 						
 						chromosomes[2000][k][j] = 0;
 					}
@@ -398,6 +397,7 @@ public class DLB {
 				maxFitId = i;
 			}
 		}
+		System.out.println(" "+maxFit);
 		/*
 		System.out.println(maxFit+" "+maxFitId);
 		System.out.print("\n");
@@ -426,9 +426,10 @@ public class DLB {
 			for(j=0;j<counter[maxFitId][k];j++)
 			{				
 				finalSchedule[k][j] =chromosomes[maxFitId][k][j];
+				System.out.print(finalSchedule[k][j]);
 			}
 		}
-		System.out.println(maxFit);
+		System.out.println(" "+maxFit);
 		
 		Mutation();
 		
@@ -454,13 +455,23 @@ public class DLB {
 			}			
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
+				//System.out.print(" roy ");
 				for(j=0;j<counter[maxFitId][k];j++)
 				{				
 					finalSchedule[k][j] = chromosomes[maxFitId][k][j];
+					System.out.print(finalSchedule[k][j]);
 				}
 			}
 		}
-	System.out.println(maxFit);
-	
+	System.out.println(" "+maxFit);
+	for(i=0;i<input.no_Of_Proc;i++)
+	{
+		for(j=0;j<counter[maxFitId][i];j++)
+		{				
+				procAvT[i]+= input.inputTask.exe_time[finalSchedule[i][j]];
+				System.out.print(finalSchedule[i][j]);
+		}
+		System.out.println(" "+procAvT[i]);
+	}
 	}
 }
