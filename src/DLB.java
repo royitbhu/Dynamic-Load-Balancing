@@ -87,25 +87,26 @@ public class DLB {
 	static int minScheduleTime=1000;    //intial schedule
 	static int sizeSlideWindow= 10;		//Sliding window
 	static int chromosomes[][][]= new int[2001][5][10]; 		//Solution set (Population of 1000) 
-	static int minScheduleList[][]= new int[5][10];		//Processor - Task list of Min Schedule
+	//static int minScheduleList[][]= new int[5][10];		//Processor - Task list of Min Schedule
 	static int procAvT[] = new int[10];				//Processor available time
 	static scheduleTask schedule[] = new scheduleTask[10];		//Store schedule task data 
 //	static int taskAtProc[][] = new int[1001][20];	//store which task schedule at which processor
 	static inputData input= new inputData();//store input  
-	int slideWindow[] = new int[sizeSlideWindow];					//store current task no in Sliding window
+	static int slideWindow[] = new int[sizeSlideWindow];					//store current task no in Sliding window
 	static int counter[][] = new int[2001][5];
 	static float fitNess[] = new float[2001];
 	static float roulette[] = new float[1000];
 	static int finalSchedule[][] = new int [5][10];
- 	
+	static int finalDSchedule[][] = new int [5][100];
+ 	static int finalCount[] = new int[5];
 	
 	
 	//Create Population of 1000 Chromosomes and store it in chromosomes[][][]
-	static void createPopulation()
+	static void createPopulation(int id)
 	{	
 		Random rand = new Random();
 		int k,tmp,l,z,j,i;		
-		input.takeinput();
+		//System.out.print("roy ");
 		for(l=0;l<1000;l++) // Populatio 1000
 		{
 			
@@ -113,7 +114,7 @@ public class DLB {
 			{
 				counter[l][z]=0;
 			}
-			for(k=0;k<sizeSlideWindow;k++)
+			for(k=id;k<((sizeSlideWindow+id)>input.no_Of_Task?input.no_Of_Task:(sizeSlideWindow+id));k++)
 			{
 					tmp = rand.nextInt(input.no_Of_Proc);	
 					chromosomes[l][tmp][counter[l][tmp]] = k;	
@@ -151,7 +152,7 @@ public class DLB {
 			
 		for(i=0;i<input.no_Of_Proc;i++)
 		{
-			int maxDAT=0;
+			int maxDAT=procAvT[i];
 			for(j=0;j<counter[id][i];j++)
 			{				
 					maxDAT+= input.inputTask.exe_time[(chromosomes[id][i][j])];
@@ -190,7 +191,10 @@ public class DLB {
 			sum_fitNess +=fitNess[i] ;
 			
 		}
-		
+		for(i=0;i<1000;i++)
+		{
+			roulette[i]=0;
+		}
 		roulette[0] =fitNess[0]/sum_fitNess;
 		for(i=1;i<1000;i++)
 		{
@@ -384,94 +388,140 @@ public class DLB {
 	//Main method
 	public static void main(String [] args){
 
-		int i=0,maxFitId=0,j=0,k,key=0;
+		int i=0,maxFitId=0,j=0,k,key=0,inc=0;
 		float maxFit=0;
-		createPopulation();
-		for(i=0;i<1000;i++)
+		input.takeinput();
+		for(inc=0;inc<input.no_Of_Task;inc+=10)
 		{
-			//System.out.print(fitNessCal(i)+" ");
-			fitNess[i] = fitNessCal(i);
-			if(maxFit<fitNess[i])
+			createPopulation(inc);
+			maxFit=0;
+			for(i=0;i<1000;i++)
 			{
-				maxFit = fitNess[i];
-				maxFitId = i;
-			}
-		}
-		System.out.println(" "+maxFit);
-		/*
-		System.out.println(maxFit+" "+maxFitId);
-		System.out.print("\n");
-		for(i=0;i<input.no_Of_Proc;i++)
-		{
-			for(j=0;j<counter[maxFitId][i];j++)
-				System.out.print(chromosomes[maxFitId][i][j]+" ");
-			System.out.print(" ");
-		}
-		*/
-	//	System.out.println(roulette_Selection());
-	//	System.out.println(roulette_Selection());
-		cycleCrosssover();
-		for(i=1000;i<2000;i++)
-		{
-			//System.out.print(fitNessCal(i)+" ");
-			fitNess[i] = fitNessCal(i);
-			if(maxFit<fitNess[i])
-			{
-				maxFit = fitNess[i];
-				maxFitId = i;
-			}
-		}
-		for(k=0;k<input.no_Of_Proc;k++)
-		{
-			for(j=0;j<counter[maxFitId][k];j++)
-			{				
-				finalSchedule[k][j] =chromosomes[maxFitId][k][j];
-				System.out.print(finalSchedule[k][j]);
-			}
-		}
-		System.out.println(" "+maxFit);
-		
-		Mutation();
-		
-		for(i=1000;i<2000;i++)
-		{
-			//System.out.print(fitNessCal(i)+" ");
-			fitNess[i] = fitNessCal(i);
-			if(maxFit<fitNess[i])
-			{
-				maxFit = fitNess[i];
-				maxFitId = i;
-				key=1;
-			}
-		}
-		if(key==1)
-		{
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				for(j=0;j<10;j++)
-				{				
-					finalSchedule[k][j] = 0;
+				//System.out.print(fitNessCal(i)+" ");
+				fitNess[i] = fitNessCal(i);
+				if(maxFit<fitNess[i])
+				{
+					maxFit = fitNess[i];
+					maxFitId = i;
 				}
-			}			
+			}
+			
+//			System.out.println();
+//			
+//			System.out.println(maxFit+" "+maxFitId);
+//			System.out.print("\n");
+//			for(i=0;i<input.no_Of_Proc;i++)
+//			{
+//				System.out.print(procAvT[i]+" ");
+//				for(j=0;j<counter[maxFitId][i];j++)
+//					System.out.print(chromosomes[maxFitId][i][j]+" ");
+//				System.out.print(" ");
+//			}
+			
+		//	System.out.println(roulette_Selection());
+		//	System.out.println(roulette_Selection());
+			cycleCrosssover();
+			for(i=1000;i<2000;i++)
+			{
+				//System.out.print(fitNessCal(i)+" ");
+				fitNess[i] = fitNessCal(i);
+				if(maxFit<fitNess[i])
+				{
+					maxFit = fitNess[i];
+					maxFitId = i;
+				}
+			}
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
-				//System.out.print(" roy ");
 				for(j=0;j<counter[maxFitId][k];j++)
 				{				
-					finalSchedule[k][j] = chromosomes[maxFitId][k][j];
-					System.out.print(finalSchedule[k][j]);
+					finalSchedule[k][j] =chromosomes[maxFitId][k][j];
+				//	System.out.print(finalSchedule[k][j]);
 				}
 			}
+			//System.out.println(" "+maxFit);
+			
+			Mutation();
+			
+			for(i=1000;i<2000;i++)
+			{
+				//System.out.print(fitNessCal(i)+" ");
+				fitNess[i] = fitNessCal(i);
+				if(maxFit<fitNess[i])
+				{
+					maxFit = fitNess[i];
+					maxFitId = i;
+					key=1;
+				}
+			}
+			if(key==1)
+			{
+				for(k=0;k<input.no_Of_Proc;k++)
+				{
+					for(j=0;j<10;j++)
+					{				
+						finalSchedule[k][j] = 0;
+					}
+				}			
+				for(k=0;k<input.no_Of_Proc;k++)
+				{
+					//System.out.print(" roy ");
+					for(j=0;j<counter[maxFitId][k];j++)
+					{				
+						finalSchedule[k][j] = chromosomes[maxFitId][k][j];
+			//			System.out.print(finalSchedule[k][j]);
+					}
+				}
+			}
+		//System.out.println(" "+maxFit);
+		for(i=0;i<input.no_Of_Proc;i++)
+		{
+			
+			for(j=0;j<counter[maxFitId][i];j++)
+			{				
+				finalDSchedule[i][finalCount[i]+j] =finalSchedule[i][j];
+				procAvT[i]+= input.inputTask.exe_time[finalSchedule[i][j]];
+				finalSchedule[i][j]=0;
+				//System.out.print(finalSchedule[i][j]);
+			}
+			finalCount[i]+=counter[maxFitId][i];				
+			//System.out.println(" "+procAvT[i]);
 		}
-	System.out.println(" "+maxFit);
+		//Set all to 0
+		for(i=0;i<=2000;i++)
+		{
+			//System.out.print(fitNessCal(i)+" ");
+			fitNess[i] =0;
+			for(j=0;j<input.no_Of_Proc;j++)
+			{
+				
+				for(k=0;k<counter[i][j];k++)
+				{
+					chromosomes[i][j][k]=0;
+				}
+				counter[i][j]=0;
+			}
+		}
+		for(i=0;i<10;i++)
+		{
+			slideWindow[i]=0;
+		}
+	}
+//	for(i=0;i<input.no_Of_Proc;i++)
+//	{
+//		System.out.print(procAvT[i]+" ");
+//	}
+		
 	for(i=0;i<input.no_Of_Proc;i++)
 	{
-		for(j=0;j<counter[maxFitId][i];j++)
+		
+		for(j=0;j<finalCount[i];j++)
 		{				
-				procAvT[i]+= input.inputTask.exe_time[finalSchedule[i][j]];
-				System.out.print(finalSchedule[i][j]);
+			System.out.print(finalDSchedule[i][j]+" ");
 		}
-		System.out.println(" "+procAvT[i]);
+		System.out.print(" = "+procAvT[i]);
+		System.out.println();
 	}
-	}
+	
+  }
 }
