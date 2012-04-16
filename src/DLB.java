@@ -8,7 +8,7 @@ class tasks{
 	int[] exe_time;
 	
 	tasks(){		
-		exe_time = new int[100];
+		exe_time = new int[1000];
 	}
 }
 
@@ -21,8 +21,8 @@ class inputData {
 	inputData()	{
 		inputTask = new tasks();
 	}
-	
-	//takes input from file input.txt 
+
+//	//takes input from file input.txt 
 	public void takeinput() 
 	{
 		File inFile;
@@ -38,24 +38,24 @@ class inputData {
      	    	
      	    	line = scanner.nextLine();
      	    	
-     	    	//Input no. of Tasks and Processors
+//     	    	Input no. of Tasks and Processors
      	    	no_Of_Proc = Integer.parseInt(line);
  
-     	    	//System.out.println("No. of Processor = "+ no_Of_Proc+"\n");
+//     	    	System.out.println("No. of Processor = "+ no_Of_Proc+"\n");
      	    	
      	    	line = scanner.nextLine(); 
      	    	line = scanner.nextLine(); 
-     	    	//Input Execution time of each Task     	    	
-     	    //	System.out.print("Task No\t Execution time");
-     	    //	System.out.print("\n");
+//     	    	Input Execution time of each Task     	    	
+//     	    	System.out.print("Task No\t Execution time");
+//     	    	System.out.print("\n");
      	    	
      	    	st=new StringTokenizer(line," ");
      	    	for(i=0;st.hasMoreTokens();i++)
      	    	{
-     	    	//		System.out.print("(");
+//     	    			System.out.print("(");
      	    			inputTask.exe_time[i] = Integer.parseInt(st.nextToken());
-     	    	//		System.out.print("  "+i+"\t\t"+inputTask.exe_time[i]);
-	        	//   	System.out.print(" )\n");	        	    	
+//     	    			System.out.print("  "+i+"\t\t"+inputTask.exe_time[i]);
+//	        	   		System.out.print(" )\n");	        	    	
      	    	}
      	    	no_Of_Task = i;
      	    	System.out.println();
@@ -84,24 +84,25 @@ class scheduleTask {
 //Main class
 public class DLB {
 	
-	static int minScheduleTime=1000;    //intial schedule
+	static int minScheduleTime=100000;    //intial schedule
 	static int sizeSlideWindow= 10;		//Sliding window
-	static int chromosomes[][][]= new int[2001][5][10]; 		//Solution set (Population of 1000) 
+	static int chromosomes[][][]= new int[2001][5][sizeSlideWindow]; 		//Solution set (Population of 1000) 
 	//static int minScheduleList[][]= new int[5][10];		//Processor - Task list of Min Schedule
 	static int procAvT[] = new int[10];				//Processor available time
-	static scheduleTask schedule[] = new scheduleTask[10];		//Store schedule task data 
+	static scheduleTask schedule[] = new scheduleTask[sizeSlideWindow];		//Store schedule task data 
 //	static int taskAtProc[][] = new int[1001][20];	//store which task schedule at which processor
 	static inputData input= new inputData();//store input  
 	static int slideWindow[] = new int[sizeSlideWindow];					//store current task no in Sliding window
 	static int counter[][] = new int[2001][5];
 	static float fitNess[] = new float[2001];
 	static float roulette[] = new float[1000];
-	static int finalSchedule[][] = new int [5][10];
-	static int finalDSchedule[][] = new int [5][100];
+	static int finalSchedule[][] = new int [5][sizeSlideWindow];
+	static int finalDSchedule[][] = new int [5][500];
  	static int finalCount[] = new int[5];
+ 	static float proc_speed[]=new float[5];
 	
 	
-	//Create Population of 1000 Chromosomes and store it in chromosomes[][][]
+ //	Create Population of 1000 Chromosomes and store it in chromosomes[][][]
 	static void createPopulation(int id)
 	{	
 		Random rand = new Random();
@@ -120,30 +121,42 @@ public class DLB {
 					chromosomes[l][tmp][counter[l][tmp]] = k;	
 					counter[l][tmp]++;
 			}
-		/*	System.out.print("\n");
-			for(i=0;i<input.no_Of_Proc;i++)
-			{
-				for(j=0;j<counter[l][i];j++)
-					System.out.print(chromosomes[l][i][j]+" ");
-				System.out.print(" ");
-			}
-		*/
+//			System.out.print("\n");
+//			for(i=0;i<input.no_Of_Proc;i++)
+//			{
+//				for(j=0;j<counter[l][i];j++)
+//					System.out.print(chromosomes[l][i][j]+" ");
+//				System.out.print(" ");
+//			}
+//		
 		}			
 	}
 	
-	//Calculate max of two integers
+//	processor Speed initialization
+	static void speed_initialization()
+	{
+		int i=0;
+		for(i=0;i<input.no_Of_Proc;i++)
+		{
+			proc_speed[i]=(float) (1+i*0.5);
+//			System.out.println(proc_speed[i]);
+		}
+		
+	}
+	
+//	Calculate max of two integers
 	static int maX(int x,int y)
 	{
 		return x>y?x:y;
 	}
 	
-	//Calculate max of two floats
+//	Calculate max of two floats
 	static float maXF(float x,float y)
 	{
 		return x>y?x:y;
 	}
 		
-	//Calculate Fitness of a given chromosome (include the average utilization of Processors)	
+//	Calculate Fitness of a given chromosome (include the average utilization of Processors)	
 	static float fitNessCalwLoadBal(int id)
 	{
 		int i=0,j,z,scheduleTime=0;
@@ -155,35 +168,35 @@ public class DLB {
 			int maxDAT=procAvT[i];
 			for(j=0;j<counter[id][i];j++)
 			{				
-					maxDAT+= input.inputTask.exe_time[(chromosomes[id][i][j])];
+					maxDAT+= input.inputTask.exe_time[(chromosomes[id][i][j])]/proc_speed[i];
 			}
 			scheduleTime = maX(scheduleTime,maxDAT);
-				//procAvT[i] = maxDAT ;
-			//sum+=maxDAT;  //for Loadbalancing
-				//System.out.print(maxDAT+" ");
+//				procAvT[i] = maxDAT ;
+			sum+=maxDAT;  //for Loadbalancing
+//				System.out.print(maxDAT+" ");
 		}
-		//avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; //for Load balancing
-				//System.out.print(avgUtilization+" ");
-		avgUtilization = 1; //without load balancing
-				/*System.out.print(":");
-					scheduleTime=0;
-					for(i=0;i<5;i++)
-					{
-						if(scheduleTime<procAvT[i])
-							scheduleTime=procAvT[i];
-					}
-					//for(i=0;i<5;i++)
-					//{
-					//	System.out.print(procAvT[i]+" ");
-					//}
-					*/
+		avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; //for Load balancing
+//				System.out.print(avgUtilization+" ");
+//		avgUtilization = 1; //without load balancing
+//				System.out.print(":");
+//					scheduleTime=0;
+//					for(i=0;i<5;i++)
+//					{
+//						if(scheduleTime<procAvT[i])
+//							scheduleTime=procAvT[i];
+//					}
+//					for(i=0;i<5;i++)
+//					{
+//						System.out.print(procAvT[i]+" ");
+//					}
+					
 		fitness = avgUtilization/scheduleTime;				
 		return fitness*1000;
 	}
 	
 	
 
-	//Roullete wheel Selection
+//	Roullete wheel Selection
 	static int roulette_Selection()
 	{
 		Random rand = new Random();
@@ -217,18 +230,18 @@ public class DLB {
 		return s_id;
 	}
 	
-	//Cycle Crossover
+//	Cycle Crossover
 	static void cycleCrosssover()
 	{
 		int i=0,P1,P2,k,j,x=0,randVar,l;
-		int tmp[][] = new int[2000][10];
-		int switchNum[] = new int[10];
+		int tmp[][] = new int[2000][sizeSlideWindow];
+		int switchNum[] = new int[sizeSlideWindow];
 		Random rand = new Random();
 		for(i=0;i<1000;i+=2)
 		{
 			P1 = roulette_Selection();
 			P2 = roulette_Selection();
-			//System.out.println(P1+"  "+P2);
+//			System.out.println(P1+"  "+P2);
 			x=0;
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
@@ -248,11 +261,11 @@ public class DLB {
 					x++;
 				}
 			}
-			for(l=0;l<10;l++)
+			for(l=0;l<sizeSlideWindow;l++)
 			{
 				switchNum[l] = 0;
 			}
-			randVar = rand.nextInt(10);
+			randVar = rand.nextInt(sizeSlideWindow);
 			int temp = tmp[i][randVar];
 			//System.out.println(randVar);
 			tmp[1000+i][randVar] = tmp[i][randVar];
@@ -271,7 +284,7 @@ public class DLB {
 				switchNum[randVar]= 1;				
 			}
 			
-			for(l=0;l<10;l++)
+			for(l=0;l<sizeSlideWindow;l++)
 			{
 				if(switchNum[l]==0)
 				{
@@ -338,7 +351,7 @@ public class DLB {
 	}
 	
 	
-	//Mutation
+//	Mutation
 	static void Mutation()
 	{
 		int i,j,k,randSol,randT1,randT2;
@@ -347,8 +360,8 @@ public class DLB {
 		for(i=0;i<1000;i++)
 		{
 			randSol = rand.nextInt(1000);
-			randT1 = rand.nextInt(10);
-			randT2 = rand.nextInt(10);
+			randT1 = rand.nextInt(sizeSlideWindow);
+			randT2 = rand.nextInt(sizeSlideWindow);
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
 				counter[2000][k] =counter[1000+randSol][k];
@@ -367,10 +380,10 @@ public class DLB {
 			}
 	
 			fitPar = fitNessCalwLoadBal(1000+randSol);
-			//fitPar = fitNessCalwoLoadBal(1000+randSol);
+//			fitPar = fitNessCalwoLoadBal(1000+randSol);
 			fitMut = fitNessCalwLoadBal(2000);
 			//fitMut = fitNessCalwoLoadBal(2000);
-			//System.out.println(fitPar+" "+fitMut+" "+randSol);
+//			System.out.println(fitPar+" "+fitMut+" "+randSol);
 			if(fitPar<fitMut)
 			{
 				for(k=0;k<input.no_Of_Proc;k++)
@@ -391,22 +404,23 @@ public class DLB {
 		}
 	}
 	
-	//Main method
+//	Main method
 	public static void main(String [] args){
 
 		int i=0,maxFitId=0,j=0,k,key=0,inc=0;
 		float maxFit=0;
 		input.takeinput();
-		for(inc=0;inc<input.no_Of_Task;inc+=10)
+		speed_initialization();
+		for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 		{
 			createPopulation(inc);
 			maxFit=0;
 			for(i=0;i<1000;i++)
 			{
-				//System.out.print(fitNessCal(i)+" ");
+//				System.out.print(fitNessCal(i)+" ");
 				fitNess[i] = fitNessCalwLoadBal(i);
-				//fitNess[i] = fitNessCalwoLoadBal(i);
-				//System.out.print(fitNess[i]+" ");
+//				fitNess[i] = fitNessCalwoLoadBal(i);
+//				System.out.print(fitNess[i]+" ");
 				if(maxFit<fitNess[i])
 				{
 					maxFit = fitNess[i];
@@ -426,14 +440,14 @@ public class DLB {
 //				System.out.print(" ");
 //			}
 			
-		//	System.out.println(roulette_Selection());
-		//	System.out.println(roulette_Selection());
+//			System.out.println(roulette_Selection());
+//			System.out.println(roulette_Selection());
 			cycleCrosssover();
 			for(i=1000;i<2000;i++)
 			{
-				//System.out.print(fitNessCal(i)+" ");
+//				System.out.print(fitNessCal(i)+" ");
 				fitNess[i] = fitNessCalwLoadBal(i);
-				//fitNess[i] = fitNessCalwoLoadBal(i);
+//				fitNess[i] = fitNessCalwoLoadBal(i);
 				if(maxFit<fitNess[i])
 				{
 					maxFit = fitNess[i];
@@ -445,18 +459,18 @@ public class DLB {
 				for(j=0;j<counter[maxFitId][k];j++)
 				{				
 					finalSchedule[k][j] =chromosomes[maxFitId][k][j];
-				//	System.out.print(finalSchedule[k][j]);
+//					System.out.print(finalSchedule[k][j]);
 				}
 			}
-			//System.out.println(" "+maxFit);
+//			System.out.println(" "+maxFit);
 			
 			Mutation();
 			
 			for(i=1000;i<2000;i++)
 			{
-				//System.out.print(fitNessCal(i)+" ");
+//				System.out.print(fitNessCal(i)+" ");
 				fitNess[i] = fitNessCalwLoadBal(i);
-				//fitNess[i] = fitNessCalwoLoadBal(i);
+//				fitNess[i] = fitNessCalwoLoadBal(i);
 				if(maxFit<fitNess[i])
 				{
 					maxFit = fitNess[i];
@@ -468,39 +482,39 @@ public class DLB {
 			{
 				for(k=0;k<input.no_Of_Proc;k++)
 				{
-					for(j=0;j<10;j++)
+					for(j=0;j<sizeSlideWindow;j++)
 					{				
 						finalSchedule[k][j] = 0;
 					}
 				}			
 				for(k=0;k<input.no_Of_Proc;k++)
 				{
-					//System.out.print(" roy ");
+//					System.out.print(" roy ");
 					for(j=0;j<counter[maxFitId][k];j++)
 					{				
 						finalSchedule[k][j] = chromosomes[maxFitId][k][j];
-			//			System.out.print(finalSchedule[k][j]);
+//						System.out.print(finalSchedule[k][j]);
 					}
 				}
 			}
-		//System.out.println(" "+maxFit);
+//		System.out.println(" "+maxFit);
 		for(i=0;i<input.no_Of_Proc;i++)
 		{
 			
 			for(j=0;j<counter[maxFitId][i];j++)
 			{				
 				finalDSchedule[i][finalCount[i]+j] =finalSchedule[i][j];
-				procAvT[i]+= input.inputTask.exe_time[finalSchedule[i][j]];
+				procAvT[i]+= input.inputTask.exe_time[finalSchedule[i][j]]/proc_speed[i];
 				finalSchedule[i][j]=0;
-				//System.out.print(finalSchedule[i][j]);
+//				System.out.print(finalSchedule[i][j]);
 			}
 			finalCount[i]+=counter[maxFitId][i];				
-			//System.out.println(" "+procAvT[i]);
+//			System.out.println(" "+procAvT[i]);
 		}
-		//Set all to 0
+//		Set all to 0
 		for(i=0;i<=2000;i++)
 		{
-			//System.out.print(fitNessCal(i)+" ");
+//			System.out.print(fitNessCal(i)+" ");
 			fitNess[i] =0;
 			for(j=0;j<input.no_Of_Proc;j++)
 			{
@@ -512,7 +526,7 @@ public class DLB {
 				counter[i][j]=0;
 			}
 		}
-		for(i=0;i<10;i++)
+		for(i=0;i<sizeSlideWindow;i++)
 		{
 			slideWindow[i]=0;
 		}
@@ -525,10 +539,10 @@ public class DLB {
 	for(i=0;i<input.no_Of_Proc;i++)
 	{
 		
-		for(j=0;j<finalCount[i];j++)
-		{				
-			System.out.print(finalDSchedule[i][j]+" ");
-		}
+//		for(j=0;j<finalCount[i];j++)
+//		{				
+//			System.out.print(finalDSchedule[i][j]+" ");
+//		}
 		System.out.print(" = "+procAvT[i]);
 		System.out.println();
 	}
