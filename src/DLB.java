@@ -144,7 +144,7 @@ public class DLB {
 	}
 		
 	//Calculate Fitness of a given chromosome (include the average utilization of Processors)	
-	static float fitNessCal(int id)
+	static float fitNessCalwLoadBal(int id)
 	{
 		int i=0,j,z,scheduleTime=0;
 		float avgUtilization =0 ,sum =0,fitness=0;
@@ -158,27 +158,31 @@ public class DLB {
 					maxDAT+= input.inputTask.exe_time[(chromosomes[id][i][j])];
 			}
 			scheduleTime = maX(scheduleTime,maxDAT);
-			//procAvT[i] = maxDAT ;
-			sum+=maxDAT;
-			//System.out.print(maxDAT+" ");
+				//procAvT[i] = maxDAT ;
+			//sum+=maxDAT;  //for Loadbalancing
+				//System.out.print(maxDAT+" ");
 		}
-		avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; 
-		/*System.out.print(":");
-		scheduleTime=0;
-		for(i=0;i<5;i++)
-		{
-			if(scheduleTime<procAvT[i])
-				scheduleTime=procAvT[i];
-		}
-		//for(i=0;i<5;i++)
-		//{
-		//	System.out.print(procAvT[i]+" ");
-		//}
-		*/
+		//avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; //for Load balancing
+				//System.out.print(avgUtilization+" ");
+		avgUtilization = 1; //without load balancing
+				/*System.out.print(":");
+					scheduleTime=0;
+					for(i=0;i<5;i++)
+					{
+						if(scheduleTime<procAvT[i])
+							scheduleTime=procAvT[i];
+					}
+					//for(i=0;i<5;i++)
+					//{
+					//	System.out.print(procAvT[i]+" ");
+					//}
+					*/
 		fitness = avgUtilization/scheduleTime;				
 		return fitness*1000;
 	}
 	
+	
+
 	//Roullete wheel Selection
 	static int roulette_Selection()
 	{
@@ -362,8 +366,10 @@ public class DLB {
 				}
 			}
 	
-			fitPar = fitNessCal(1000+randSol);
-			fitMut = fitNessCal(2000);
+			fitPar = fitNessCalwLoadBal(1000+randSol);
+			//fitPar = fitNessCalwoLoadBal(1000+randSol);
+			fitMut = fitNessCalwLoadBal(2000);
+			//fitMut = fitNessCalwoLoadBal(2000);
 			//System.out.println(fitPar+" "+fitMut+" "+randSol);
 			if(fitPar<fitMut)
 			{
@@ -398,7 +404,9 @@ public class DLB {
 			for(i=0;i<1000;i++)
 			{
 				//System.out.print(fitNessCal(i)+" ");
-				fitNess[i] = fitNessCal(i);
+				fitNess[i] = fitNessCalwLoadBal(i);
+				//fitNess[i] = fitNessCalwoLoadBal(i);
+				//System.out.print(fitNess[i]+" ");
 				if(maxFit<fitNess[i])
 				{
 					maxFit = fitNess[i];
@@ -424,7 +432,8 @@ public class DLB {
 			for(i=1000;i<2000;i++)
 			{
 				//System.out.print(fitNessCal(i)+" ");
-				fitNess[i] = fitNessCal(i);
+				fitNess[i] = fitNessCalwLoadBal(i);
+				//fitNess[i] = fitNessCalwoLoadBal(i);
 				if(maxFit<fitNess[i])
 				{
 					maxFit = fitNess[i];
@@ -446,7 +455,8 @@ public class DLB {
 			for(i=1000;i<2000;i++)
 			{
 				//System.out.print(fitNessCal(i)+" ");
-				fitNess[i] = fitNessCal(i);
+				fitNess[i] = fitNessCalwLoadBal(i);
+				//fitNess[i] = fitNessCalwoLoadBal(i);
 				if(maxFit<fitNess[i])
 				{
 					maxFit = fitNess[i];
