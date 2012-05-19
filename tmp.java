@@ -8,6 +8,7 @@ for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 			
 			//HOW MANY GENERATIONS YOU WANT TO COMPUTE
 			gen=100;
+			//System.out.print("Maximum Generations ="+gen+" , ");
 			while(gen>0)
 			{
 				//STORE THE FITNESS OF CHROMOSOME
@@ -70,7 +71,7 @@ for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 						}
 						fCount[k]=counter[maxFitId][k];
 					}
-					maxFitNess[inc] = maxFit;
+					//maxFitNess[inc] = maxFit;
 				}
 				/*for(k=0;k<input.no_Of_Proc;k++)
 				{
@@ -166,7 +167,7 @@ for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 			}
 
 			
-			for(k=0;k<input.no_Of_Proc;k++)
+			/*for(k=0;k<input.no_Of_Proc;k++)
 			{
 				//System.out.print(" roy ");
 				for(j=0;j<fCount[k];j++)
@@ -174,7 +175,7 @@ for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 					System.out.print(finalSchedule[k][j]+" ");
 				}
 				System.out.println();
-			}
+			}*/
 			//System.out.println(maxFitNess[inc]);
 		
 			//==============
@@ -191,14 +192,18 @@ for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 					finalSchedule[k][j]=0;
 					//System.out.print(finalSchedule[k][j]);
 				}
-				System.out.print(procAvT[k]+" ");
+				//System.out.print(procAvT[k]+" ");
 				finalCount[k]+=fCount[k];	
 				maxF=maXF(maxF,procAvT[k]);
 				sum+=procAvT[k];
 				//System.out.println(" "+procAvT[i]);
 			}
-			//System.out.println();
-			System.out.println("Utilization "+sum/(input.no_Of_Proc*maxF)+"\n");
+			//System.out.print("No. of Task ="+(inc+sizeSlideWindow)+" , ");
+			//System.out.print("Population Size ="+pop_size+" , ");
+			//System.out.print("No of Processors="+input.no_Of_Proc+" , ");
+			System.out.print("Sliding Window="+sizeSlideWindow+" , ");
+			System.out.print("Makespan ="+maxF+" , ");
+			System.out.print("Utilization= "+sum/(input.no_Of_Proc*maxF)+"\n");
 		
 			
 			
@@ -242,3 +247,4 @@ for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 			System.out.println();
 		}
 		System.out.println("Final avg utilization = "+sum/(input.no_Of_Proc*maxF));
+		

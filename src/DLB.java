@@ -90,7 +90,7 @@ public class DLB {
 	//SLIDING WINDOW
 	static int sizeSlideWindow= 10;
 	//POPULATION SIZE(SHOUD BE EVEN)
-	static int pop_size = 6;
+	static int pop_size = 1000;
 	//SOLUTION SET(INITIAL POPULATION PLUS CROSSOVER AND MUTATION POP)
 	static int chromosomes[][][]; 
 	//PROCESSOR AVAILABLE TIME OR EACH PROCESSOR
@@ -473,7 +473,7 @@ public class DLB {
 		}
 	}
 	
-	//RANDOM ALLOCATION ALGORITHM(FOR COMPARISON)
+	//RANDOM ALLOCATION ALGORITHM(FOR COMPARISON )
 	static void RA()
 	{
 		Random rand = new Random();
@@ -519,12 +519,26 @@ public class DLB {
 				RAprocAvT[l]=maxDAT;
 				scheduleTime = maX(scheduleTime,maxDAT);
 				//procAvT[i] = maxDAT ;
-				sum+=maxDAT; 
+				//sum+=maxDAT; 
 			}
 			//FOR LOAD BALANCING
-			avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; 						
-			fitness = (avgUtilization/scheduleTime)*1000;			
-			System.out.println(avgUtilization+" "+fitness);
+			//avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; 						
+			//fitness = (avgUtilization/scheduleTime)*1000;			
+			//System.out.println(avgUtilization+" "+fitness);
+			System.out.print("No. of Task ="+(i+sizeSlideWindow)+" , ");
+			//System.out.print("Population Size ="+pop_size+" , ");
+			//System.out.print("No of Processors="+input.no_Of_Proc+" , ");
+			//System.out.print("Sliding Window="+sizeSlideWindow+" , ");
+			int max=0,y;
+			sum=0;
+			for(y=0;y<input.no_Of_Proc;y++)
+			{
+				if(max<RAprocAvT[y])
+					max= RAprocAvT[y];
+				sum+=RAprocAvT[y];
+			}
+			System.out.print("Makespan ="+max+" , ");
+			System.out.print("Utilization= "+sum/(input.no_Of_Proc*max)+"\n");
 		}
 		System.out.println();
 		for(l=0;l<input.no_Of_Proc;l++)
@@ -576,6 +590,7 @@ public class DLB {
 			
 			//HOW MANY GENERATIONS YOU WANT TO COMPUTE
 			gen=100;
+			//System.out.print("Maximum Generations ="+gen+" , ");
 			while(gen>0)
 			{
 				//STORE THE FITNESS OF CHROMOSOME
@@ -638,7 +653,7 @@ public class DLB {
 						}
 						fCount[k]=counter[maxFitId][k];
 					}
-					maxFitNess[inc] = maxFit;
+					//maxFitNess[inc] = maxFit;
 				}
 				/*for(k=0;k<input.no_Of_Proc;k++)
 				{
@@ -734,7 +749,7 @@ public class DLB {
 			}
 
 			
-			for(k=0;k<input.no_Of_Proc;k++)
+			/*for(k=0;k<input.no_Of_Proc;k++)
 			{
 				//System.out.print(" roy ");
 				for(j=0;j<fCount[k];j++)
@@ -742,7 +757,7 @@ public class DLB {
 					System.out.print(finalSchedule[k][j]+" ");
 				}
 				System.out.println();
-			}
+			}*/
 			//System.out.println(maxFitNess[inc]);
 		
 			//==============
@@ -759,14 +774,18 @@ public class DLB {
 					finalSchedule[k][j]=0;
 					//System.out.print(finalSchedule[k][j]);
 				}
-				System.out.print(procAvT[k]+" ");
+				//System.out.print(procAvT[k]+" ");
 				finalCount[k]+=fCount[k];	
 				maxF=maXF(maxF,procAvT[k]);
 				sum+=procAvT[k];
 				//System.out.println(" "+procAvT[i]);
 			}
-			//System.out.println();
-			System.out.println("Utilization "+sum/(input.no_Of_Proc*maxF)+"\n");
+			//System.out.print("No. of Task ="+(inc+sizeSlideWindow)+" , ");
+			//System.out.print("Population Size ="+pop_size+" , ");
+			//System.out.print("No of Processors="+input.no_Of_Proc+" , ");
+			System.out.print("Sliding Window="+sizeSlideWindow+" , ");
+			System.out.print("Makespan ="+maxF+" , ");
+			System.out.print("Utilization= "+sum/(input.no_Of_Proc*maxF)+"\n");
 		
 			
 			
