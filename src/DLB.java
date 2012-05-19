@@ -117,7 +117,8 @@ public class DLB {
  	static float proc_speed[];
  	//STORES MAXIMUM FITNESS OF EACH SLIDING WINDOW
  	static float maxFitNess [];
-	
+	//
+ 	static int scheduleRA[][];
  	//Take input
  	static inputData input= new inputData();  
  		
@@ -472,6 +473,73 @@ public class DLB {
 		}
 	}
 	
+	//RANDOM ALLOCATION ALGORITHM(FOR COMPARISON)
+	static void RA()
+	{
+		Random rand = new Random();
+		int k,tmp,l,z,j,i,scheduleTime=0;
+		scheduleRA = new int [input.no_Of_Proc][input.no_Of_Task];
+		int counterRA[]= new int[input.no_Of_Proc];
+		int RAchromosomes[][] =new int[input.no_Of_Proc][sizeSlideWindow]; 
+		int RAcounter[]= new int[input.no_Of_Proc];
+		int RAprocAvT[]=new int[input.no_Of_Proc];
+		for(z=0;z<input.no_Of_Proc;z++)
+		{
+			RAcounter[z]=0;
+			RAprocAvT[z]=0;
+			counterRA[z]=0;
+		}
+		for(i=0;i<input.no_Of_Task;i+=sizeSlideWindow)
+		{
+			//System.out.print(i+"=");
+			for(z=0;z<input.no_Of_Proc;z++)
+			{
+				RAcounter[z]=0;
+			}
+			for(k=i;k<(i+sizeSlideWindow);k++)
+			{
+					tmp = rand.nextInt(input.no_Of_Proc);	
+					RAchromosomes[tmp][RAcounter[tmp]] = k;
+					//System.out.print(RAchromosomes[tmp][RAcounter[tmp]]+" ");
+					RAcounter[tmp]++;
+			}
+			System.out.println();
+			
+			float avgUtilization =0 ,sum =0,fitness=0;
+						
+			for(l=0;l<input.no_Of_Proc;l++)
+			{
+				int maxDAT=RAprocAvT[l];
+				for(j=0;j<RAcounter[l];j++)
+				{				
+						maxDAT+= input.inputTask.exe_time[(RAchromosomes[l][j])]/proc_speed[l];
+						scheduleRA[l][counterRA[l]+j]=RAchromosomes[l][j];
+				}
+				counterRA[l]+=RAcounter[l];
+				RAprocAvT[l]=maxDAT;
+				scheduleTime = maX(scheduleTime,maxDAT);
+				//procAvT[i] = maxDAT ;
+				sum+=maxDAT; 
+			}
+			//FOR LOAD BALANCING
+			avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; 						
+			fitness = (avgUtilization/scheduleTime)*1000;			
+			System.out.println(avgUtilization+" "+fitness);
+		}
+		System.out.println();
+		for(l=0;l<input.no_Of_Proc;l++)
+		{
+			System.out.print("Processor #"+l+"=");
+			for(j=0;j<counterRA[l];j++)
+			{				
+					System.out.print(scheduleRA[l][j]+" ");
+			}
+			System.out.print("="+RAprocAvT[l]);
+			System.out.println();
+		}
+	}
+	
+	
 	//MAIN METHOD
 	public static void main(String [] args)
 	{
@@ -492,13 +560,12 @@ public class DLB {
 	 	fitNess = new float[3*pop_size];
 	 	roulette = new float[pop_size];
 		finalSchedule = new int [input.no_Of_Proc][sizeSlideWindow];
-		finalDSchedule = new int [input.no_Of_Proc][500];
+		finalDSchedule = new int [input.no_Of_Proc][input.no_Of_Task];
 	 	proc_speed=new float[input.no_Of_Proc];
 	 	maxFitNess  = new float [3*pop_size];
 	 	
 	 	//INITIALIZE THE PROCESSORS SPEED
 		speed_initialization();
-		
 		for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 		{
 			maxFit=0;
@@ -743,5 +810,8 @@ public class DLB {
 			System.out.println();
 		}
 		System.out.println("Final avg utilization = "+sum/(input.no_Of_Proc*maxF));
+		
+		//RANDOM ALLOCATION ALGORITHM
+		//RA();
 	}
 }

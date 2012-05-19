@@ -1,461 +1,17 @@
-import java.io.File;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.StringTokenizer;
-
-//Task's Execution time
-class tasks{
-	int[] exe_time;
-	
-	tasks(){		
-		exe_time = new int[1000];
-	}
-}
-
-//Take input through File
-class inputData {
-	int no_Of_Proc;
-	int no_Of_Task;
-	tasks inputTask;
-	
-	inputData()	{
-		inputTask = new tasks();
-	}
-
-//	//takes input from file input.txt 
-	public void takeinput() 
-	{
-		File inFile;
-		Scanner scanner;
-		String line;
-		StringTokenizer st;
-		int i=0;
-		
-		try 
-     	{
- 	    	inFile = new File("input.txt");
- 	    	scanner = new Scanner(inFile);
- 	    	
- 	    	line = scanner.nextLine();
- 	    	
- 	    	//Store no. of Processors
-     	    	no_Of_Proc = Integer.parseInt(line);
- 
-     	    	//System.out.println("No. of Processor = "+ no_Of_Proc+"\n");
- 	    	line = scanner.nextLine(); 
- 	    	line = scanner.nextLine(); 
- 	    	
- 	    	   	    	
- 	    	//System.out.print("Task No\t Execution time");
- 	    	//System.out.print("\n");
- 	    	
- 	    	//Input Execution time of each Task  
- 	    	st=new StringTokenizer(line," ");
- 	    	for(i=0;st.hasMoreTokens();i++)
- 	    	{
- 	    			//System.out.print("(");
- 	    			inputTask.exe_time[i] = Integer.parseInt(st.nextToken());
- 	    			//System.out.print("  "+i+"\t\t"+inputTask.exe_time[i]);
-        	   		//System.out.print(" )\n");	        	    	
- 	    	}
- 	    	
- 	    	//Total no. of Task
- 	    	no_Of_Task = i;
- 	    	System.out.println();
-     
-     	}
-		catch (Exception e)
+for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
 		{
-			e.printStackTrace();
-		}
-	}
-}
-
-//Task starting time , finish time and processor after schedule
-class scheduleTask {
-	int ST;
-	int FT;
-	int taskNo;
-	int proc;
-	scheduleTask()
-	{
-		
-	}
-}
-
-
-//Main class
-public class DLB {
-	
-	//Intial schedule
-	static int minScheduleTime=100000;    
-	//Sliding window
-	static int sizeSlideWindow= 10;
-	
-	//Solution set (Population of 1000)
-	static int chromosomes[][][]= new int[3000][5][sizeSlideWindow]; 
-	//static int minScheduleList[][]= new int[5][10];		//Processor - Task list of Min Schedule
-	static int procAvT[] = new int[10];				//Processor available time
-	static scheduleTask schedule[] = new scheduleTask[sizeSlideWindow];		//Store schedule task data 
-//	static int taskAtProc[][] = new int[1001][20];	//store which task schedule at which processor
-	static inputData input= new inputData();//store input  
-	
-	static int counter[][] = new int[3000][5];
-	static float fitNess[] = new float[3000];
-	static float roulette[] = new float[1000];
-	static int finalSchedule[][] = new int [5][sizeSlideWindow];
-	static int finalDSchedule[][] = new int [5][500];
- 	static int finalCount[] = new int[5];
- 	static int fCount[] = new int[5];
- 	static float proc_speed[]=new float[5];
- 	static float maxFitNess [] = new float [100];
-	
-	
- //	Create Population of 1000 Chromosomes and store it in chromosomes[][][]
-	static void createPopulation(int id)
-	{	
-		Random rand = new Random();
-		int k,tmp,l,z,j,i;		
-		//System.out.print("roy ");
-		for(l=0;l<1000;l++) // Populatio 1000
-		{
-			for(z=0;z<5;z++)
-			{
-				counter[l][z]=0;
-			}
-			for(k=id;k<((sizeSlideWindow+id)>input.no_Of_Task?input.no_Of_Task:(sizeSlideWindow+id));k++)
-			{
-					tmp = rand.nextInt(input.no_Of_Proc);	
-					chromosomes[l][tmp][counter[l][tmp]] = k;	
-					counter[l][tmp]++;
-			}
-			/*
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				for(j=0;j<counter[l][k];j++)
-					System.out.print(chromosomes[l][k][j]+" ");
-				System.out.print(" ");
-			}
-			System.out.print("\t");*/
-		}			
-		//System.out.print("\n");
-	}
-	
-//	processor Speed initialization
-	static void speed_initialization()
-	{
-		int i=0;
-		for(i=0;i<input.no_Of_Proc;i++)
-		{
-			proc_speed[i]=1;//(float) (1+i*0.25);
-//			System.out.println(proc_speed[i]);
-		}
-		
-	}
-	
-//	Calculate max of two integers
-	static int maX(int x,int y)
-	{
-		return x>y?x:y;
-	}
-	
-//	Calculate max of two floats
-	static float maXF(float x,float y)
-	{
-		return x>y?x:y;
-	}
-		
-//	Calculate Fitness of a given chromosome (include the average utilization of Processors)	
-	static float fitNessCalwLoadBal(int id)
-	{
-		int i=0,j,z,scheduleTime=0;
-		float avgUtilization =0 ,sum =0,fitness=0;
-		
-			
-		for(i=0;i<input.no_Of_Proc;i++)
-		{
-			int maxDAT=procAvT[i];
-			for(j=0;j<counter[id][i];j++)
-			{				
-					maxDAT+= input.inputTask.exe_time[(chromosomes[id][i][j])]/proc_speed[i];
-			}
-			scheduleTime = maX(scheduleTime,maxDAT);
-//				procAvT[i] = maxDAT ;
-			sum+=maxDAT;  //for Loadbalancing
-//				System.out.print(maxDAT+" ");
-		}
-		avgUtilization = (sum / (input.no_Of_Proc*scheduleTime)) ; //for Load balancing
-//				System.out.print(avgUtilization+" ");
-//		avgUtilization = 1; //without load balancing
-//				System.out.print(":");
-//					scheduleTime=0;
-//					for(i=0;i<5;i++)
-//					{
-//						if(scheduleTime<procAvT[i])
-//							scheduleTime=procAvT[i];
-//					}
-//					for(i=0;i<5;i++)
-//					{
-//						System.out.print(procAvT[i]+" ");
-//					}
-					
-		fitness = avgUtilization/scheduleTime;				
-		return fitness*1000;
-	}
-	
-	
-
-//	Roullete wheel Selection
-	static int roulette_Selection()
-	{
-		Random rand = new Random();
-		int s_id=0,i=0;
-		float sum_fitNess=0,tmp;	
-		
-		for(i=0;i<1000;i++)
-		{
-			sum_fitNess +=fitNess[i] ;
-			
-			
-		}
-		//System.out.print(sum_fitNess+" ");
-		for(i=0;i<1000;i++)
-		{
-			roulette[i]=0;
-		}
-		roulette[0] =fitNess[0]/sum_fitNess;
-		for(i=1;i<1000;i++)
-		{
-			roulette[i] =roulette[i-1]+(fitNess[i]/sum_fitNess);			
-		}
-		tmp = (rand.nextInt((int)sum_fitNess))/sum_fitNess;
-		for(i=1;i<1000;i++)
-		{
-			//System.out.println(tmp);
-			if((tmp>roulette[i-1]) && (tmp<roulette[i]))
-			{
-				s_id =i; 
-				break;
-			}
-		}
-		return s_id;
-	}
-	
-//	Cycle Crossover
-	static void cycleCrosssover()
-	{
-		int i=0,P1,P2,k,j,x=0,randVar,l;
-		int tmp[][] = new int[2000][sizeSlideWindow];
-		int switchNum[] = new int[sizeSlideWindow];
-		Random rand = new Random();
-		for(i=0;i<1000;i+=2)
-		{
-			P1 = roulette_Selection();
-			P2 = roulette_Selection();
-//			System.out.println(P1+"  "+P2);
-//			check if both selected parents are not same
-			while(P1==P2)
-			{
-				P2 = roulette_Selection();				
-			}
-			x=0;
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				for(j=0;j<counter[P1][k];j++)
-				{				
-					tmp[i][x] = chromosomes[P1][k][j];
-
-					x++;
-				}
-			}
-			x=0;
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				for(j=0;j<counter[P2][k];j++)
-				{				
-					tmp[i+1][x] = chromosomes[P2][k][j];
-					x++;
-				}
-			}
-			for(l=0;l<sizeSlideWindow;l++)
-			{
-				switchNum[l] = 0;
-			}
-			randVar = rand.nextInt(sizeSlideWindow);
-			int temp = tmp[i][randVar];
-			//System.out.println(randVar);
-			tmp[1000+i][randVar] = tmp[i][randVar];
-			tmp[1001+i][randVar] = tmp[i+1][randVar];
-			switchNum[randVar]= 1;
-//			copying the task in cycle crossover			
-			while(tmp[i+1][randVar]!=temp)
-			{
-				l=0;
-				while(tmp[i][l]!=tmp[i+1][randVar])
-				{
-					l++;
-				}
-				randVar = l;
-				tmp[1000+i][randVar] = tmp[i][randVar];
-				tmp[1001+i][randVar] = tmp[i+1][randVar];
-				switchNum[randVar]= 1;				
-			}
-//			Switching the task in cycle crossover			
-			for(l=0;l<sizeSlideWindow;l++)
-			{
-				if(switchNum[l]==0)
-				{
-					tmp[1000+i][l] = tmp[i+1][l];
-					tmp[1001+i][l] = tmp[i][l];
-				}
-			}
-			
-			/*
-			for(l=0;l<10;l++)
-			{
-				System.out.print(tmp[i][l]+" ");
-			}System.out.println();
-			for(l=0;l<10;l++)
-			{
-				System.out.print(tmp[i+1][l]+" ");
-			}System.out.println();
-			for(l=0;l<10;l++)
-			{
-				System.out.print(tmp[1000+i][l]+" ");
-			}System.out.println();
-			for(l=0;l<10;l++)
-			{
-				System.out.print(tmp[1001+i][l]+" ");
-			}System.out.println();
-			*/
-			x=0;
-//			copying the newly generated child
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				counter[1000+i][k] = counter[P1][k];
-				for(j=0;j<counter[P1][k];j++)
-				{				
-					chromosomes[1000+i][k][j]= tmp[1000+i][x];
-
-					x++;
-				}
-			}
-			x=0;
-//			copying the newly generated child
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				counter[1001+i][k] = counter[P2][k];
-				for(j=0;j<counter[P2][k];j++)
-				{				
-					chromosomes[1001+i][k][j] = tmp[1001+i][x];
-					x++;
-				}
-			}
-
-			/*
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				for(j=0;j<counter[P1][k];j++)
-					System.out.print(chromosomes[1000+i][k][j]+" ");
-				System.out.print(" ");
-			}
-			System.out.println();
-			for(k=0;k<input.no_Of_Proc;k++)
-			{
-				for(j=0;j<counter[P2][k];j++)
-					System.out.print(chromosomes[1001+i][k][j]+" ");
-				System.out.print(" ");
-			}
-			*/
-		}		
-	}
-	
-	
-//	Mutation
-	static void Mutation(int num,int inc1)
-	{
-		int i,j,k,randSol,randT1,randT2;
-		Random rand = new Random();
-		float fitPar,fitMut;
-	
-		randT1 = rand.nextInt(sizeSlideWindow);
-		randT2 = rand.nextInt(sizeSlideWindow);
-		while(randT1==randT2)
-		{
-			randT2 = rand.nextInt(sizeSlideWindow);
-		}
-		for(k=0;k<input.no_Of_Proc;k++)
-		{
-			counter[2000+num][k] =counter[1000+num][k];
-			for(j=0;j<counter[2000+num][k];j++)
-			{				
-				if(chromosomes[1000+num][k][j] == randT1+inc1)
-					chromosomes[2000+num][k][j] = randT2+inc1;
-				else
-				{
-					if(chromosomes[1000+num][k][j] == randT2+inc1)
-						chromosomes[2000+num][k][j] = randT1+inc1;
-					else
-						chromosomes[2000+num][k][j] = chromosomes[1000+num][k][j];
-				}
-			}
-			/*fitPar = fitNessCalwLoadBal(1000+randSol);
-			fitPar = fitNessCalwoLoadBal(1000+randSol);
-			fitMut = fitNessCalwLoadBal(2000);
-			fitMut = fitNessCalwoLoadBal(2000);
-			System.out.println(fitPar+" "+fitMut+" "+randSol);
-			if(fitPar<fitMut)
-			{
-				for(k=0;k<input.no_Of_Proc;k++)
-				{
-					counter[2000][k] =0;
-					for(j=0;j<counter[1000+randSol][k];j++)
-					{				
-						if(chromosomes[1000+randSol][k][j] == randT1)
-							chromosomes[1000+randSol][k][j] = randT2;
-						else
-							if(chromosomes[1000+randSol][k][j] == randT2)
-								chromosomes[1000+randSol][k][j] = randT1;
-						
-						chromosomes[2000][k][j] = 0;
-					}
-				}
-			}*/
-		}
-	}
-	
-//	Main method
-	public static void main(String [] args)
-	{
-		int i=0,maxFitId=0,j=0,k,key=0,inc=0,gen,l=0,flip=0,z=0;;
-		float maxF = 0,sum=0;
-		float maxFit=0;
-		input.takeinput();
-		speed_initialization();
-		
-		for(inc=0;inc<input.no_Of_Task;inc+=sizeSlideWindow)
-		{
-			
 			maxFit=0;
 			maxFitId=0;
+			
+			//CREATE POPULATION OF POP_SIZE
 			createPopulation(inc);
+			
+			//HOW MANY GENERATIONS YOU WANT TO COMPUTE
 			gen=100;
 			while(gen>0)
 			{
-				/*for(z=0;z<1000;z++)
-				{	
-					for(k=0;k<input.no_Of_Proc;k++)
-					{
-						for(j=0;j<counter[z][k];j++)
-							System.out.print(chromosomes[z][k][j]+" ");
-						System.out.print(" ");
-					}
-					System.out.print("\t");
-				}
-				System.out.print("\n");*/
-				
-	
-				for(i=0;i<1000;i++)
+				//STORE THE FITNESS OF CHROMOSOME
+				for(i=0;i<pop_size ;i++)
 				{
 					fitNess[i] = fitNessCalwLoadBal(i);
 					//fitNess[i] = fitNessCalwoLoadBal(i);
@@ -467,10 +23,12 @@ public class DLB {
 					}*/
 					
 				}
-				//System.out.println();
+				
+				//APPLY CYCLE CROSSOVER OPERATOR ON CURRENT SOLUTION SET AND STORE CHILDS IN CHROMOSOME(1000-2000)
 				cycleCrosssover();
 				
-				for(i=0;i<1000;i++)
+				//MUTATE THE OFFSPRING STORES IN CHROMOSOME(2000-3000)
+				for(i=0;i<pop_size ;i++)
 				{
 					Mutation(i,inc);
 				}
@@ -484,11 +42,11 @@ public class DLB {
 						System.out.print(" ");
 					}
 					System.out.print("\t");
-				}
-				System.out.print("\n");*/
+				}*/
+				
+				//FIND THE FITTEST SCHEDULE
 				flip=0;
-				//System.out.print("gen="+gen+" ");
-				for(i=0;i<3000;i++)
+				for(i=0;i<3*pop_size ;i++)
 				{
 					//System.out.print(fitNessCal(i)+" ");
 					fitNess[i] = fitNessCalwLoadBal(i);
@@ -524,21 +82,23 @@ public class DLB {
 					}
 				}
 				System.out.println();*/
-				//copy all best to current population
-				for(i=0;i<1000;i++)
+				
+				
+				//CREATE NEW POPULATION WHICH CONSIST OF FITTEST OFFSPRING
+				for(i=0;i<pop_size ;i++)
 				{
-					if(fitNess[i]>=fitNess[1000+i]&&fitNess[i]>=fitNess[2000+i])
+					if(fitNess[i]>=fitNess[pop_size +i]&&fitNess[i]>=fitNess[2*pop_size +i])
 						l=i;
 					else
 					{
-						if(fitNess[i]<fitNess[1000+i]&&fitNess[1000+i]>fitNess[2000+i])
-							l=1000+i;
+						if(fitNess[i]<fitNess[pop_size +i]&&fitNess[pop_size +i]>fitNess[2*pop_size +i])
+							l=pop_size +i;
 						else
-							l=2000+i;
+							l=2*pop_size +i;
 					}
 					
 					//System.out.println(fitNess[i]+" "+fitNess[1000+i]+" "+fitNess[2000+i]+"="+l);
-					if(l>=1000)
+					if(l>=pop_size )
 					{
 						for(k=0;k<input.no_Of_Proc;k++)
 						{
@@ -575,8 +135,8 @@ public class DLB {
 				
 				
 			
-				//Set all to 0
-				for(i=1000;i<3000;i++)
+				//SET ALL TO NULL
+				for(i=pop_size ;i<3*pop_size ;i++)
 				{
 					//System.out.print(fitNessCal(i)+" ");
 					fitNess[i] =0;
@@ -618,6 +178,7 @@ public class DLB {
 			//System.out.println(maxFitNess[inc]);
 		
 			//==============
+			//SAVE THE BEST SCHEDULE OF CURRENT SLIDINNG WINDOW INTO FINAL SCHEDULE
 			sum = 0;
 			maxF = 0;
 			for(k=0;k<input.no_Of_Proc;k++)
@@ -641,8 +202,8 @@ public class DLB {
 		
 			
 			
-			//Set all to 0			
-			for(z=0;z<3000;z++)
+			//SET ALL TO 0			
+			for(z=0;z<3*pop_size ;z++)
 			{
 				fitNess[z] =0;
 				for(k=0;k<input.no_Of_Proc;k++)
@@ -655,6 +216,7 @@ public class DLB {
 					counter[z][k]=0;
 				}
 			}
+			
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
 				//System.out.print(" roy ");
@@ -680,5 +242,3 @@ public class DLB {
 			System.out.println();
 		}
 		System.out.println("Final avg utilization = "+sum/(input.no_Of_Proc*maxF));
-	}
-}
