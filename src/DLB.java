@@ -89,8 +89,8 @@ public class DLB {
 	static int minScheduleTime=100000;    
 	//SLIDING WINDOW
 	static int sizeSlideWindow= 10;
-	//POPULATION SIZE
-	static int pop_size = 1000;
+	//POPULATION SIZE(SHOUD BE EVEN)
+	static int pop_size = 6;
 	//SOLUTION SET(INITIAL POPULATION PLUS CROSSOVER AND MUTATION POP)
 	static int chromosomes[][][]; 
 	//PROCESSOR AVAILABLE TIME OR EACH PROCESSOR
@@ -126,7 +126,7 @@ public class DLB {
 	static void createPopulation(int id)
 	{	
 		Random rand = new Random();
-		int k,tmp,l,z;
+		int k,tmp,l,z,j;
 		//RANDOMLY CREATE SOLUTION SET OF POP_SIZE(1000)
 		for(l=0;l<pop_size;l++) 
 		{
@@ -137,16 +137,18 @@ public class DLB {
 			for(k=id;k<((sizeSlideWindow+id)>input.no_Of_Task?input.no_Of_Task:(sizeSlideWindow+id));k++)
 			{
 					tmp = rand.nextInt(input.no_Of_Proc);	
-					chromosomes[l][tmp][counter[l][tmp]] = k;	
+					chromosomes[l][tmp][counter[l][tmp]] = k;
+					//System.out.print(chromosomes[l][tmp][counter[l][tmp]]+" ");
 					counter[l][tmp]++;
 			}
-			/*
+			//System.out.println();
+			/*System.out.print(l+"=");
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
 				for(j=0;j<counter[l][k];j++)
 					System.out.print(chromosomes[l][k][j]+" ");
 			}
-			System.out.print("\t");*/
+			System.out.print("\n");*/
 		}			
 	}
 	
@@ -258,6 +260,7 @@ public class DLB {
 	{
 		int i=0,P1,P2,k,j,x=0,randVar,l;
 		int tmp[][] = new int[2*pop_size][sizeSlideWindow];
+
 		int switchNum[] = new int[sizeSlideWindow];
 		Random rand = new Random();
 		for(i=0;i<pop_size ;i+=2)
@@ -271,6 +274,20 @@ public class DLB {
 			{
 				P2 = roulette_Selection();				
 			}
+			/*System.out.print(P1+"=");
+			for(k=0;k<input.no_Of_Proc;k++)
+			{				
+				for(j=0;j<counter[P1][k];j++)
+					System.out.print(chromosomes[P1][k][j]+" ");
+			}
+			System.out.print("\t");
+			System.out.print(P2+"=");
+			for(k=0;k<input.no_Of_Proc;k++)
+			{
+				for(j=0;j<counter[P2][k];j++)
+					System.out.print(chromosomes[P2][k][j]+" ");
+			}
+			System.out.print("\n");*/
 			
 			//MAKE A TEMPRARY COPY OF PARENT1
 			x=0;			
@@ -279,21 +296,25 @@ public class DLB {
 				for(j=0;j<counter[P1][k];j++)
 				{				
 					tmp[i][x] = chromosomes[P1][k][j];
-
+					//System.out.print(chromosomes[P1][k][j]+" ");
 					x++;
 				}
+				
 			}
+			//System.out.println();
 			
-			//MAKE A TEMPRARY COPY OF PARENT1
+			//MAKE A TEMPRARY COPY OF PARENT2
 			x=0;
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
 				for(j=0;j<counter[P2][k];j++)
 				{				
 					tmp[i+1][x] = chromosomes[P2][k][j];
+					//System.out.print(chromosomes[P2][k][j]+" ");
 					x++;
 				}
 			}
+			//System.out.println();
 			
 			for(l=0;l<sizeSlideWindow;l++)
 			{
@@ -311,8 +332,9 @@ public class DLB {
 			//COPYING THE TASK IN CYCLE CROSSOVER			
 			while(tmp[i+1][randVar]!=temp)
 			{
+				//System.out.print(tmp[i+1][randVar]+" ");
 				l=0;
-				while(tmp[i][l]!=tmp[i+1][randVar])
+				while(tmp[i][l]!=tmp[i+1][randVar] )
 				{
 					l++;
 				}
@@ -356,7 +378,7 @@ public class DLB {
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
 				counter[pop_size +i][k] = counter[P1][k];
-				for(j=0;j<counter[P1][k];j++)
+				for(j=0;j<counter[pop_size +i][k];j++)
 				{				
 					chromosomes[pop_size +i][k][j]= tmp[pop_size +i][x];
 
@@ -369,7 +391,7 @@ public class DLB {
 			for(k=0;k<input.no_Of_Proc;k++)
 			{
 				counter[pop_size +1+i][k] = counter[P2][k];
-				for(j=0;j<counter[P2][k];j++)
+				for(j=0;j<counter[pop_size+1+i][k];j++)
 				{				
 					chromosomes[pop_size +1+i][k][j] = tmp[pop_size +1+i][x];
 					x++;
@@ -486,7 +508,7 @@ public class DLB {
 			createPopulation(inc);
 			
 			//HOW MANY GENERATIONS YOU WANT TO COMPUTE
-			gen=2;
+			gen=100;
 			while(gen>0)
 			{
 				//STORE THE FITNESS OF CHROMOSOME
